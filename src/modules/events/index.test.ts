@@ -383,3 +383,20 @@ describe.each(helpers)("events.$name", (h) => {
     ]);
   });
 });
+
+describe("events dense single chunk", () => {
+  it("returns every log of a single chunk holding 150000 logs, in order", async () => {
+    const count = 150_000;
+    const logs: FakeLog[] = Array.from({ length: count }, (_, i) => ({
+      ...helpers[0].makeLog(42n),
+      transactionHash: txHash(BigInt(i)),
+    }));
+    const { client } = makeClient({ logs });
+    const module = createEventsModule(client, { factory: FACTORY, memeHook: HOOK });
+    const result = await module.getLaunches(42n, 42n);
+    expect(result).toHaveLength(count);
+    expect(result[0].transactionHash).toBe(txHash(0n));
+    expect(result[count - 1].transactionHash).toBe(txHash(BigInt(count - 1)));
+    expect(result.every((e, i) => e.transactionHash === txHash(BigInt(i)))).toBe(true);
+  });
+});

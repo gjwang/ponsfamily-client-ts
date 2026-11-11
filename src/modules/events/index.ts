@@ -32,7 +32,7 @@ async function collectChunked<T>(
   while (from <= resolvedTo) {
     const last = from + chunkSize - 1n;
     const to = last < resolvedTo ? last : resolvedTo;
-    results.push(...(await fetchRange(from, to)));
+    for (const item of await fetchRange(from, to)) results.push(item);
     from = to + 1n;
   }
   return results;
